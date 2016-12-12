@@ -9,30 +9,23 @@ typedef struct{
 
 typedef struct{
     int numberOfElements;
-    word words[3809];
+    word words[50000];
+    int totalWords;
 }wordList;
 
-void addWord(wordList * words, char name[32]);
-int findElement(wordList * words, char name[32]);
+void addWord(wordList * words, char name[200]);
+int findElement(wordList * words, char name[200]);
 void quicksort(wordList * words, int len);
 
-int main()
+int main(int argc, char *argv[])
 {
     wordList words = {};
-    addWord(&words, "penis");
-    addWord(&words, "penis");
-    addWord(&words, "penis");
-    addWord(&words, "penis");
-    addWord(&words, "homo");
-    addWord(&words, "homo");
-    addWord(&words, "kives");
-    addWord(&words, "homo");
-    addWord(&words, "kives");
-    addWord(&words, "kives");
-    ReadWords("testi.txt", &words, 20);
+    ReadWords(argv[1], &words, 50000);
     int i = 0;
     quicksort(&words, words.numberOfElements);
-    for(i = 0; i < words.numberOfElements; i++)
+    printf("Sanoja yhteensä: %d\n", words.totalWords);
+    printf("Erilaisia sanoja yhteensä: %d\n", words.numberOfElements);
+    for(i = 0; i < 100; i++)
     {
         printf("%d kappaletta sanaa %s\n", words.words[i].count, words.words[i].str);
     }
@@ -40,7 +33,7 @@ int main()
     return 0;
 }
 
-int findElement(wordList * words, char name[32])
+int findElement(wordList * words, char name[200])
 {
     int i = 0;
     while(i <= words->numberOfElements)
@@ -52,17 +45,21 @@ int findElement(wordList * words, char name[32])
     return i;
 }
 
-void addWord(wordList * words, char name[32])
+void addWord(wordList * words, char name[200])
 {
     int i = findElement(words, name);
-    if (i > words->numberOfElements)
+    if (i >= words->numberOfElements)
         {
             words->words[words->numberOfElements].count = 1;
             strcpy(words->words[words->numberOfElements].str, name);
             words->numberOfElements++;
+            words->totalWords++;
         }
     else
+        {
         words->words[i].count++;
+        words->totalWords++;
+        }
 }
 
 void quicksort(wordList * words, int len)
@@ -90,7 +87,7 @@ void quicksort(wordList * words, int len)
 
 int ReadWords(const char *filename, wordList *words, int max_number_of_words)
 {
-    FILE *f = fopen("testi.txt", "r"); // checking for NULL is boring; i omit it
+    FILE *f = fopen(filename, "r"); // checking for NULL is boring; i omit it
 
   if (f == NULL) {
     perror ("Error opening file");
@@ -100,21 +97,54 @@ int ReadWords(const char *filename, wordList *words, int max_number_of_words)
     int i;
     char temp[100]; // assuming the words cannot be too long
 
-    for (i = 0; i < max_number_of_words; ++i)
+    for (i = 0; i != -1; ++i)
     {
         // Read a word from the file
         if (fscanf(f, "%s", temp) != 1)
             break;
         // note: "!=1" checks for end-of-file; using feof for that is usually a bug
-        for(int j = 0; temp[j]; j++)
+        int j;
+        for(j = 0; temp[j]; j++)
         {
             temp[j] = tolower(temp[j]);
         }
         // Allocate memory for the word, because temp is too temporary
+        strclean(&temp);
+        splitword(&temp);
         addWord(words, temp);
     }
     fclose(f);
 
     // The result of this function is the number of words in the file
     return i;
+}
+
+void strclean(char* src)
+{
+    char *dst = src;
+
+    while(*src)
+    {
+        if(strchr("abcdefghijklmnopqrstuvwxyz\'", *src) != NULL)
+            *dst++ = *src;
+        else
+            *dst++ = ' ';
+        src++;
+    }
+    *dst = '\0';
+}
+
+void strclean(char* src)
+{
+    char *dst = src;
+
+    while(*src)
+    {
+        if(strchr("abcdefghijklmnopqrstuvwxyz\'", *src) != NULL)
+            *dst++ = *src;
+        else
+            *dst++ = ' ';
+        src++;
+    }
+    *dst = '\0';
 }
