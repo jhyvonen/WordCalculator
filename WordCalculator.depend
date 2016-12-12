@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1481523930 source:/home/rake/Documents/Projects/WordCalculator/main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
