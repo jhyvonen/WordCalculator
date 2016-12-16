@@ -47,19 +47,25 @@ int findElement(wordList * words, char name[200])
 
 void addWord(wordList * words, char name[200])
 {
-    int i = findElement(words, name);
-    if (i >= words->numberOfElements)
-        {
-            words->words[words->numberOfElements].count = 1;
-            strcpy(words->words[words->numberOfElements].str, name);
-            words->numberOfElements++;
+    char * pch;
+    pch = strtok (name, " ");
+    while(pch != NULL)
+    {
+        int i = findElement(words, pch);
+        if (i >= words->numberOfElements)
+            {
+                words->words[words->numberOfElements].count = 1;
+                strcpy(words->words[words->numberOfElements].str, pch);
+                words->numberOfElements++;
+                words->totalWords++;
+            }
+        else
+            {
+            words->words[i].count++;
             words->totalWords++;
-        }
-    else
-        {
-        words->words[i].count++;
-        words->totalWords++;
-        }
+            }
+        pch = strtok (NULL, " ");
+    }
 }
 
 void quicksort(wordList * words, int len)
@@ -72,7 +78,7 @@ void quicksort(wordList * words, int len)
   for (i = 0, j = len - 1; ; i++, j--)
   {
     while (words->words[i].count > pivot.count) i++;
-    while (words->words[j].count < pivot.count) j--;
+    while (words->words[j].count <= pivot.count) j--;
 
     if (i >= j) break;
 
@@ -110,28 +116,12 @@ int ReadWords(const char *filename, wordList *words, int max_number_of_words)
         }
         // Allocate memory for the word, because temp is too temporary
         strclean(&temp);
-        splitword(&temp);
         addWord(words, temp);
     }
     fclose(f);
 
     // The result of this function is the number of words in the file
     return i;
-}
-
-void strclean(char* src)
-{
-    char *dst = src;
-
-    while(*src)
-    {
-        if(strchr("abcdefghijklmnopqrstuvwxyz\'", *src) != NULL)
-            *dst++ = *src;
-        else
-            *dst++ = ' ';
-        src++;
-    }
-    *dst = '\0';
 }
 
 void strclean(char* src)
