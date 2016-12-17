@@ -16,20 +16,29 @@ typedef struct{
 void addWord(wordList * words, char name[200]);
 int findElement(wordList * words, char name[200]);
 void quicksort(wordList * words, int len);
+int wordCompare (word *a, word *b);
 
 int main(int argc, char *argv[])
 {
     wordList words = {};
-    ReadWords(argv[1], &words, 50000);
+    ReadWords(argv[1], &words);
     int i = 0;
-    quicksort(&words, words.numberOfElements);
-    printf("Sanoja yhteensä: %d\n", words.totalWords);
-    printf("Erilaisia sanoja yhteensä: %d\n", words.numberOfElements);
+    qsort((void *) words.words, words.numberOfElements, sizeof (word), (int (*) (const void *, const void *)) wordCompare);
+    printf("Total number of words: %d\n", words.totalWords);
+    printf("Number of different words = %d\nThe 100 most common words:\nWORD NUMBER OF OCCURRENCES\n", words.numberOfElements);
     for(i = 0; i < 100; i++)
     {
-        printf("%d kappaletta sanaa %s\n", words.words[i].count, words.words[i].str);
+        printf("%s %d\n", words.words[i].str, words.words[i].count);
     }
 
+    return 0;
+}
+
+int wordCompare (word *a, word *b){
+    if (a->count < b->count)
+        return +1;
+    if (a->count > b->count)
+        return -1;
     return 0;
 }
 
@@ -68,60 +77,34 @@ void addWord(wordList * words, char name[200])
     }
 }
 
-void quicksort(wordList * words, int len)
+void ReadWords(const char *filename, wordList *words)
 {
-  if (len < 2) return;
+    FILE *f = fopen(filename, "r");
 
-  word pivot = words->words[len / 2];
-
-  int i, j;
-  for (i = 0, j = len - 1; ; i++, j--)
-  {
-    while (words->words[i].count > pivot.count) i++;
-    while (words->words[j].count <= pivot.count) j--;
-
-    if (i >= j) break;
-
-    word temp = words->words[i];
-    words->words[i]     = words->words[j];
-    words->words[j]     = temp;
-  }
-
-  quicksort(words, i);
-  quicksort(words, len - i);
-}
-
-int ReadWords(const char *filename, wordList *words, int max_number_of_words)
-{
-    FILE *f = fopen(filename, "r"); // checking for NULL is boring; i omit it
-
-  if (f == NULL) {
-    perror ("Error opening file");
-    return;
-  }
+    if(f == NULL) {
+        perror ("Error opening file");
+        return;
+    }
 
     int i;
-    char temp[100]; // assuming the words cannot be too long
+    char temp[100];
 
-    for (i = 0; i != -1; ++i)
+    for(i = 0; i != -1 ; ++i)
     {
-        // Read a word from the file
-        if (fscanf(f, "%s", temp) != 1)
+        if(fscanf(f, "%s", temp) != 1)
             break;
-        // note: "!=1" checks for end-of-file; using feof for that is usually a bug
+
         int j;
         for(j = 0; temp[j]; j++)
         {
-            temp[j] = tolower(temp[j]);
+            temp[j] = toupper(temp[j]);
         }
-        // Allocate memory for the word, because temp is too temporary
         strclean(&temp);
         addWord(words, temp);
     }
     fclose(f);
 
-    // The result of this function is the number of words in the file
-    return i;
+    return;
 }
 
 void strclean(char* src)
@@ -130,7 +113,7 @@ void strclean(char* src)
 
     while(*src)
     {
-        if(strchr("abcdefghijklmnopqrstuvwxyz\'", *src) != NULL)
+        if(strchr("ABCDEFGHIJKLMNOPQRSTUVWXYZ\'", *src) != NULL)
             *dst++ = *src;
         else
             *dst++ = ' ';
